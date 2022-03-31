@@ -45,7 +45,7 @@ class _ListArticleState extends State<ListArticle> {
       body: Consumer<ProviderUtama>(
         builder: (context, value, child) => FutureBuilder<ResponseListModel>(
             future: value.futureList,
-            builder: (context, AsyncSnapshot snapshot) {
+            builder: (context, snapshot) {
               if (snapshot.hasData == false) {
                 return const Center(
                   child: CircularProgressIndicator(),
@@ -53,10 +53,14 @@ class _ListArticleState extends State<ListArticle> {
               }
               return ListView.builder(
                   controller: _controller,
-                  itemCount: snapshot.data.hashCode,
+                  itemCount: snapshot.data!.data.length,
                   itemBuilder: (context, index) => ListTile(
-                        title: Text(snapshot.data!.id.toString()),
-                        subtitle: Text(snapshot.data!.title),
+                        leading:
+                            Text(snapshot.data!.data[index]['id'].toString()),
+                        title: Text(
+                            snapshot.data!.data[index]['title'].toString()),
+                        subtitle:
+                            Text(snapshot.data!.data[index]['body'].toString()),
                       ));
             }),
       ),

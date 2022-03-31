@@ -7,7 +7,7 @@ class ProviderUtama with ChangeNotifier {
 
   Future listarticle() async {
     var _article = ListArticleProv();
-    futureList = _article.getArticle();
-    return futureList;
+    futureList = _article.getArticle(start: 0, limit: 20);
+    notifyListeners();
   }
 }

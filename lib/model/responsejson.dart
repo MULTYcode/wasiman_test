@@ -1,15 +1,9 @@
 class ResponseListModel {
-  late final int id;
-  late final String title;
-  late final String body;
+  late final List data;
+  ResponseListModel({required this.data});
 
-  ResponseListModel(
-      {required this.id, required this.title, required this.body});
+  factory ResponseListModel.fromJson(Map<String, dynamic> json) =>
+      ResponseListModel(data: json[0]);
 
-  factory ResponseListModel.fromJson(Map<String, dynamic> usersjson) =>
-      ResponseListModel(
-        id: usersjson["id"] ?? "",
-        title: usersjson["title"] ?? "",
-        body: usersjson["body"] ?? "",
-      );
+  Map<String, dynamic> toJson() => {'data': data};
 }
