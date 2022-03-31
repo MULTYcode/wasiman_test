@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:lazy_load_scrollview/lazy_load_scrollview.dart';
-
-import '../bloc/infinite_load_bloc.dart';
-import '../photos_item.dart';
-import '../photos_model.dart';
+import 'package:provider/provider.dart';
+import 'package:wasiman_test/model/responsejson.dart';
+import 'package:wasiman_test/provider/mainprovider.dart';
 
 class ListArticle extends StatefulWidget {
   const ListArticle({Key? key}) : super(key: key);
@@ -14,62 +11,57 @@ class ListArticle extends StatefulWidget {
 }
 
 class _ListArticleState extends State<ListArticle> {
-  late InfiniteLoadBloc _bloc;
-  late int _currentLenght;
-  List<PhotosModel> _data = [];
+  final _controller = ScrollController();
 
-  void _loadMoreData() {
-    _bloc.add(GetMoreInfiniteLoad(start: _currentLenght, limit: 10));
-  }
+  static const snackBarTop = SnackBar(
+    content: Text('At the top'),
+  );
+
+  static const snackBarBottom = SnackBar(
+    content: Text('At the bottom'),
+  );
 
   @override
   void initState() {
-    _bloc = BlocProvider.of<InfiniteLoadBloc>(context);
     super.initState();
+    _controller.addListener(() {
+      if (_controller.position.atEdge) {
+        bool isTop = _controller.position.pixels == 0;
+        if (isTop) {
+          ScaffoldMessenger.of(context).showSnackBar(snackBarTop);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(snackBarBottom);
+        }
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('List Article'),
+        title: const Text("List Article"),
       ),
-      body: BlocBuilder<InfiniteLoadBloc, InfiniteLoadState>(
-        builder: (context, state) {
-          if (state is InfiniteLoadLoaded || state is InfiniteLoadMoreLoading) {
-            if (state is InfiniteLoadLoaded) {
-              _data = state.data;
-              _currentLenght = state.count;
-            }
-            return _buildListPhotos(state);
-          } else if (state is InfiniteLoadLoading) {
-            return const Center(child: CircularProgressIndicator());
-          } else {
-            return const Text('Error');
-          }
-        },
+      body: Consumer<ProviderUtama>(
+        builder: (context, value, child) => FutureBuilder<ResponseListModel>(
+            future: value.futureList,
+            builder: (context, AsyncSnapshot snapshot) {
+              if (snapshot.hasData == false) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+              return ListView.builder(
+                  controller: _controller,
+                  itemCount: snapshot.data.hashCode,
+                  itemBuilder: (context, index) => ListTile(
+                        title: Text(snapshot.data!.id.toString()),
+                        subtitle: Text(snapshot.data!.title),
+                      ));
+            }),
       ),
-    );
-  }
-
-  Widget _buildListPhotos(InfiniteLoadState state) {
-    return LazyLoadScrollView(
-      child: ListView(
-        children: [
-          ListView.builder(
-              shrinkWrap: true,
-              itemCount: _data.length,
-              physics: const NeverScrollableScrollPhysics(),
-              itemBuilder: (_, i) {
-                return PhotoItem(data: _data[i]);
-              }),
-          // Loading indicator more load data
-          (state is InfiniteLoadMoreLoading)
-              ? const Center(child: CircularProgressIndicator())
-              : const SizedBox(),
-        ],
-      ),
-      onEndOfPage: _loadMoreData,
     );
   }
 }
+
+class MainProvider {}
