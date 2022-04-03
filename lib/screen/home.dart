@@ -34,9 +34,11 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  getArticle(context) {
+  getArticle(context) async {
     final _p = Provider.of<ProviderUtama>(context, listen: false);
-    _p.listarticle();
+    _p.list.clear();
+    _p.startPage = 0;
+    await _p.getList();
     Navigator.push(
         context,
         MaterialPageRoute(
